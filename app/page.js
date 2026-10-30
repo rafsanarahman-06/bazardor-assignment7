@@ -1,69 +1,161 @@
-import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, TrendingUp, TrendingDown } from "lucide-react";
+import { getProducts } from "@/lib/api";
+import ProductCard from "@/components/ProductCard";
 
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.js
-            </code>{" "}
-            file.
+export default async function HomePage() {
+let products = [];
+
+try {
+products = await getProducts();
+} catch (error) {
+console.error("Homepage data loading error:", error);
+}
+
+const rising = products
+.filter((product) => product.change?.dir === "up")
+.slice(0, 6);
+
+const falling = products
+.filter((product) => product.change?.dir === "down")
+.slice(0, 6);
+
+const today = new Date().toLocaleDateString("bn-BD", {
+weekday: "long",
+day: "numeric",
+month: "long",
+year: "numeric",
+});
+
+return (
+<>
+{/* Hero Section */} <section className="hero"> <div className="container"> <div className="hero-box"> <div className="hero-copy"> <p className="hero-date">
+{today} </p>
+
+          <h1>
+            আজকের বাজারের দাম,
+            <br />
+             এক নজরে
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+
+          <p className="hero-description">
+            চাল, ডাল, তেল, সবজি, মাছ, মাংস, ডিম ও মসলার দাম- বাজারভিত্তিক বিস্তারিত, গড়, সর্বনিম্ন-
+            সর্বাধিক এবং দামের পরিবর্তন এক জায়গায়।
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+          <Link
+            href="#all-products"
+            className="hero-button"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            পণ্যের দাম দেখুন
+            <ArrowRight size={15} />
+          </Link>
         </div>
-      </main>
+
+        <div className="hero-visual">
+          <img
+            src="/bazar-hero.png"
+            alt="বাজারের নিত্যপ্রয়োজনীয় পণ্য"
+          />
+        </div>
+      </div>
     </div>
-  );
+  </section>
+
+  <div className="container home-content">
+    {/* Rising Products */}
+    <section className="home-section">
+      <div className="section-heading">
+        <h2>
+          <TrendingUp
+            size={19}
+            style={{
+              display: "inline",
+              verticalAlign: "middle",
+            }}
+          />{" "}
+          আজ দাম বেড়েছে
+        </h2>
+      </div>
+
+      {rising.length > 0 ? (
+        <div className="product-grid">
+          {rising.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+            />
+          ))}
+        </div>
+      ) : (
+        <p className="empty-message">
+          বর্তমানে দাম বৃদ্ধির কোনো তথ্য পাওয়া যায়নি।
+        </p>
+      )}
+    </section>
+
+    {/* Falling Products */}
+    <section className="home-section">
+      <div className="section-heading">
+        <h2>
+          <TrendingDown
+            size={19}
+            style={{
+              display: "inline",
+              verticalAlign: "middle",
+            }}
+          />{" "}
+          আজ দাম কমেছে
+        </h2>
+      </div>
+
+      {falling.length > 0 ? (
+        <div className="product-grid">
+          {falling.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+            />
+          ))}
+        </div>
+      ) : (
+        <p className="empty-message">
+          বর্তমানে দাম কমার কোনো তথ্য পাওয়া যায়নি।
+        </p>
+      )}
+    </section>
+
+    {/* All Products */}
+    <section
+      className="home-section"
+      id="all-products"
+    >
+      <div className="section-heading">
+        <h2>সব পণ্য</h2>
+      </div>
+
+      {products.length > 0 ? (
+        <>
+          <p className="product-count">
+            মোট {products.length.toLocaleString("bn-BD")} টি পণ্য
+          </p>
+
+          <div className="product-grid">
+            {products.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+              />
+            ))}
+          </div>
+        </>
+      ) : (
+        <p className="empty-message">
+          পণ্যের তথ্য লোড করা যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।
+        </p>
+      )}
+    </section>
+  </div>
+</>
+);
 }
